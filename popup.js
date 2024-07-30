@@ -14,12 +14,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	});
 
-	saveButton.addEventListener("click", function () {
+	saveButton.addEventListener("click", async function () {
 		if (saveAsName) {
-			chrome.runtime.sendMessage({
+			await chrome.runtime.sendMessage({
 				action: "saveWindows",
 				name: saveAsName,
 			});
+			loadSavedNames();
 		}
 	});
 
@@ -56,6 +57,13 @@ document.addEventListener("DOMContentLoaded", function () {
 			});
 		});
 	}
+
+	// 监听来自background的消息
+	chrome.runtime.onMessage.addListener((message) => {
+		if (message.action === "saveCompleted") {
+			loadSavedNames();
+		}
+	});
 
 	loadSavedNames();
 });

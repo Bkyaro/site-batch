@@ -14,13 +14,13 @@ body {
 #restore {
 	background-image: url("/images/recover.png");
 	background-size: contain;
-  cursor: pointer;
+	cursor: pointer;
 }
 
 #delete {
 	background-image: url("/images/del.png");
 	background-size: contain;
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .save {
@@ -74,6 +74,8 @@ li {
 	width: 100%;
 	align-items: center;
 	gap: 8px;
+	border-bottom: 1px dashed #d0dbeb;
+  padding-bottom: 4px;
 }
 
 .icon-wrapper {
