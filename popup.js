@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	const saveAsInput = document.getElementById("save-as");
 	const saveButton = document.getElementById("save");
 	const recoverList = document.getElementById("recover-list");
+	const alertBar = document.getElementById("alert");
 
 	let saveAsName = "";
 
@@ -60,8 +61,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// 监听来自background的消息
 	chrome.runtime.onMessage.addListener((message) => {
+		// 刷新存档
 		if (message.action === "saveCompleted") {
 			loadSavedNames();
+		}
+		// 已存在同名存档
+		if (message.action === "alreadyExist") {
+			alertBar.classList.remove("hide");
+			setTimeout(() => {
+				alertBar.classList.add("hide");
+			}, 1500);
 		}
 	});
 

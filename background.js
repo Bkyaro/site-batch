@@ -9,29 +9,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function saveWindows(name) {
-	chrome.windows.getAll({ populate: true }, function (windows) {
-		let windowInfo = windows.map((window) => {
-			return {
-				id: window.id,
-				focused: window.focused,
-				tabs: window.tabs.map((tab) => {
+	chrome.storage.local.get([name], async function (result) {
+		if (Object.keys(result).length === 0) {
+			chrome.windows.getAll({ populate: true }, function (windows) {
+				let windowInfo = windows.map((window) => {
 					return {
-						url: tab.url,
-						groupId: tab.groupId,
-						index: tab.index,
-						title: tab.title,
-						pinned: tab.pinned,
+						id: window.id,
+						focused: window.focused,
+						tabs: window.tabs.map((tab) => {
+							return {
+								url: tab.url,
+								groupId: tab.groupId,
+								index: tab.index,
+								title: tab.title,
+								pinned: tab.pinned,
+							};
+						}),
 					};
-				}),
-			};
-		});
-		let saveObj = {};
-		saveObj[name] = windowInfo;
-		chrome.storage.local.set(saveObj, function () {
-			console.log("Window information saved under name:", name);
-			// 发送消息到前端通知完成保存
-			chrome.runtime.sendMessage({ action: "saveCompleted" });
-		});
+				});
+				let saveObj = {};
+				saveObj[name] = windowInfo;
+				chrome.storage.local.set(saveObj, function () {
+					console.log("Window information saved under name:", name);
+					// 发送消息到前端通知完成保存
+					chrome.runtime.sendMessage({ action: "saveCompleted" });
+				});
+			});
+		} else {
+			chrome.runtime.sendMessage({ action: "alreadyExist" });
+		}
 	});
 }
 
@@ -112,9 +118,7 @@ function createGroup(tabId) {
 }
 
 function deleteWindows(name) {
-	chrome.storage.local.remove(name, function () {
-		console.log("Window information deleted under name:", name);
-	});
+	chrome.storage.local.remove(name);
 }
 
 chrome.runtime.onInstalled.addListener(function () {
