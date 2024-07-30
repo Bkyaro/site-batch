@@ -1,80 +1,61 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const linksList = document.getElementById("linksList");
-  const addLinkButton = document.getElementById("addLink");
-  const openAllButton = document.getElementById("openAll");
-  const newLinkInput = document.getElementById("newLink");
+	const saveAsInput = document.getElementById("save-as");
+	const saveButton = document.getElementById("save");
+	const recoverList = document.getElementById("recover-list");
 
-  // Load links from storage
-  chrome.storage.sync.get({ links: [] }, function (data) {
-    const links = data.links;
-    updateLinksList(links);
+	let saveAsName = "";
 
-    function addLink() {
-      let newLink = newLinkInput.value.trim();
-      if (newLink) {
-        if (!newLink.startsWith("https://")) {
-          newLink = `https://${newLink}`;
-        }
-        links.push(newLink);
-        updateLinksList(links);
-        saveLinks(links);
-        newLinkInput.value = ""; // Clear the input field after adding
-      }
-    }
+	saveAsInput.addEventListener("keyup", function (event) {
+		saveAsName = event.target.value;
+		if (saveAsName) {
+			saveButton.classList.add("save-enable");
+		} else {
+			saveButton.classList.remove("save-enable");
+		}
+	});
 
-    // Add a link
-    addLinkButton.addEventListener("click", addLink);
+	saveButton.addEventListener("click", function () {
+		if (saveAsName) {
+			chrome.runtime.sendMessage({
+				action: "saveWindows",
+				name: saveAsName,
+			});
+		}
+	});
 
-    // Add link when Enter key is pressed
-    newLinkInput.addEventListener("keydown", function (event) {
-      if (event.key === "Enter") {
-        addLink();
-      }
-    });
+	recoverList.addEventListener("click", function (event) {
+		const target = event.target;
+		const parentLi = target.closest("li");
+		const name = parentLi.querySelector("div").textContent;
 
-    // Remove a link
-    linksList.addEventListener("click", function (event) {
-      if (event.target.id === "delLink") {
-        const indexToRemove = event.target.dataset.index;
-        if (indexToRemove !== undefined) {
-          links.splice(indexToRemove, 1);
-          updateLinksList(links);
-          saveLinks(links);
-        }
-      }
-    });
+		if (target.id === "restore") {
+			chrome.runtime.sendMessage({
+				action: "restoreWindows",
+				name: name,
+			});
+		} else if (target.id === "delete") {
+			chrome.runtime.sendMessage({ action: "deleteWindows", name: name });
+			parentLi.remove();
+		}
+	});
 
-    // Open all links
-    openAllButton.addEventListener("click", function () {
-      for (const link of links) {
-        chrome.tabs.create({ url: link });
-      }
-    });
-  });
+	function loadSavedNames() {
+		chrome.storage.local.get(null, function (items) {
+			const savedNames = Object.keys(items);
+			recoverList.innerHTML = "";
+			savedNames.forEach((name) => {
+				const li = document.createElement("li");
+				li.innerHTML = `
+                  <div>${name}</div>
+                  <div class="icon-wrapper">
+                      <img id="restore" ></img>
+                      <img id="delete" ></img>
+                  </div>
+              `;
+				recoverList.appendChild(li);
+			});
+		});
+	}
+
+	loadSavedNames();
 });
-
-function updateLinksList(links) {
-  const linksList = document.getElementById("linksList");
-  linksList.innerHTML = "";
-  for (let i = 0; i < links.length; i++) {
-    const listItem = document.createElement("li");
-    const listItemText = document.createElement("div");
-    listItemText.textContent = links[i];
-    listItemText.addEventListener("click", function (event) {
-      event.stopPropagation;
-      chrome.tabs.create({ url: links[i] });
-    });
-
-    const deleteButton = document.createElement("img");
-    deleteButton.id = "delLink";
-    deleteButton.src = "images/del.png";
-    deleteButton.dataset.index = i; // Set the index as a data attribute
-    listItem.appendChild(listItemText);
-    listItem.appendChild(deleteButton);
-    linksList.appendChild(listItem);
-  }
-}
-
-function saveLinks(links) {
-  chrome.storage.sync.set({ links: links });
-}

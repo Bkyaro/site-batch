@@ -1,20 +1,15 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Site All</title>
-    <link rel="stylesheet" href="style.css" />
-    <script src="popup.js"></script>
-  </head>
-  <body>
-    <!-- <h2>Quick Links</h2> -->
-    <div id="openAll">
-      Open All <img src="images/init.png" alt="" srcset="" />
-    </div>
-    <ul id="linksList"></ul>
-    <div id="addWrapper">
-      <input type="text" id="newLink" placeholder="Enter a new website URL" />
-
-      <img id="addLink" src="images/add.png" alt="" srcset="" />
-    </div>
-  </body>
+	<head>
+		<title>标签页恢复</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="save">
+			<button id="save">Save tabs as :</button>
+			<input id="save-as" type="text" />
+		</div>
+		<ul id="recover-list"></ul>
+	</body>
+	<script src="popup.js"></script>
 </html>
